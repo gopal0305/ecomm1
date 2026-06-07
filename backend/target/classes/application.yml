@@ -1,0 +1,28 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecomm
+    username: ecomm
+    password: ecomm
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+app:
+  cors:
+    allowed-origins: http://localhost:3000
+  jwt:
+    issuer: ecomm
+    secret: change-this-secret-to-a-long-random-string
+    access-token-ttl-seconds: 3600
+
+logging:
+  level:
+    org.springframework.security: INFO
+
