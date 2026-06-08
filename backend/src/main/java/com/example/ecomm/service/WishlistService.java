@@ -83,19 +83,11 @@ public class WishlistService {
                         p.getId(),
                         p.getName(),
                         p.getImageUrl(),
-                        p.getPrice() != null ? p.getPrice().doubleValue() : 0.0
+                        p.getPrice()
                 ))
                 .toList();
 
-        BigDecimal total = products.stream()
-                .map(Product::getPrice)
-                .filter(p -> p != null)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         return new WishlistDtos.WishlistResponse(items, wishlistId);
-    }
-
-    private User requireCurrentUser() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             throw new com.example.ecomm.common.exceptions.UnauthorizedException("Not authenticated");

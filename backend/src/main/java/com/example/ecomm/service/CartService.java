@@ -120,25 +120,32 @@ public class CartService {
 
     private CartDtos.CartResponse toResponse(List<CartItem> items) {
         List<CartDtos.CartItemResponse> respItems = items.stream()
-                .map(i -> new CartDtos.CartItemResponse(
-                        i.getProduct().getId(),
-                        i.getProduct().getName(),
-                        i.getProduct().getImageUrl(),
-                        i.getProduct().getPrice() != null ? i.getProduct().getPrice().doubleValue() : 0.0,
+                .map(i -> {
+                    double priceDouble = i.getProduct().getPrice();
+                    double lineTotal = priceDouble * i.getQuantity();
 
-                        i.getQuantity(),
-                        (i.getProduct().getPrice() != null ? i.getProduct().getPrice().doubleValue() : 0.0) * i.getQuantity()
 
-                ))
+                    return new CartDtos.CartItemResponse(
+                            i.getProduct().getId(),
+                            i.getProduct().getName(),
+                            i.getProduct().getImageUrl(),
+                            priceDouble,
+                            i.getQuantity(),
+                            lineTotal
+                    );
+                })
                 .toList();
 
-        BigDecimal total = items.stream()
-                .map(i -> i.getProduct().getPrice() != null ? i.getProduct().getPrice().multiply(BigDecimal.valueOf(i.getQuantity())) : BigDecimal.ZERO)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        double totalDouble = items.stream()
+                .mapToDouble(i -> {
+                    return i.getProduct().getPrice() * i.getQuantity();
 
-        double totalDouble = total.doubleValue();
+                })
+                .sum();
+
 
         return new CartDtos.CartResponse(respItems, totalDouble);
+
     }
 
     private User requireCurrentUser() {
