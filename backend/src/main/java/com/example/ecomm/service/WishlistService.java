@@ -83,15 +83,17 @@ public class WishlistService {
                         p.getId(),
                         p.getName(),
                         p.getImageUrl(),
-                        p.getPrice().doubleValue()
+                        p.getPrice() != null ? p.getPrice().doubleValue() : 0.0
                 ))
                 .toList();
 
         BigDecimal total = products.stream()
                 .map(Product::getPrice)
+                .filter(p -> p != null)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new WishlistDtos.WishlistResponse(items, wishlistId);
+
 
     }
 
