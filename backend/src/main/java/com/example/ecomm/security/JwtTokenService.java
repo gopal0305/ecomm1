@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.security.Key;
+
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
@@ -16,11 +16,13 @@ import java.util.Map;
 public class JwtTokenService {
 
     private final JwtProperties props;
-    private final Key signingKey;
+    private final javax.crypto.SecretKey signingKey;
+
 
     public JwtTokenService(JwtProperties props) {
         this.props = props;
         this.signingKey = Keys.hmacShaKeyFor(props.getSecret().getBytes(StandardCharsets.UTF_8));
+
     }
 
     public String createToken(String subject, Map<String, Object> claims) {

@@ -130,8 +130,9 @@ public class CartService {
                 .toList();
 
         double total = items.stream()
-                .map(i -> i.getProduct().getPrice() * i.getQuantity())
-                .reduce(0d, Double::sum);
+                .mapToDouble(i -> i.getProduct().getPrice() * i.getQuantity())
+                .sum();
+
 
         return new CartDtos.CartResponse(respItems, total);
 
