@@ -1,9 +1,8 @@
-name: CI/CD (Frontend + Backend)
+name: CI/CD (deprecated - replaced by build.yml + deploy.yml)
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
+
 
 jobs:
   build-backend:

@@ -1,0 +1,49 @@
+name: Deploy (Frontend + Backend)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: ./deploy/frontend
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend
+          path: ./deploy/backend
+
+      # === Option A (recommended): SSH/SCP deploy ===
+      # Configure these repo secrets:
+      #   SSH_HOST, SSH_USER, SSH_KEY (private key), REMOTE_BACKEND_DIR, REMOTE_FRONTEND_DIR
+
+      - name: Deploy to nodes (SSH)
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          REMOTE_BACKEND_DIR: ${{ secrets.REMOTE_BACKEND_DIR }}
+          REMOTE_FRONTEND_DIR: ${{ secrets.REMOTE_FRONTEND_DIR }}
+        run: |
+          set -e
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+          # Deploy backend artifact
+          BACKEND_JAR=$(ls ./deploy/backend/*.jar 2>/dev/null | head -n 1 || true)
+          BACKEND_WAR=$(ls ./deploy/backend/*.war 2>/dev/null | head -n 1 || true)
+          if [ -n "$BACKEND_WAR" ]; then
+            scp -o StrictHostKeyChecking=no "$BACKEND_WAR" "$SSH_USER@$SSH_HOST:$REMOTE_BACKEND_DIR/"
+          else
+            scp -o StrictHostKeyChecking=no "$BACKEND_JAR" "$SSH_USER@$SSH_HOST:$REMOTE_BACKEND_DIR/"
+          fi
+
+          # Deploy frontend dist
+          scp -o StrictHostKeyChecking=no -r ./deploy/frontend/* "$SSH_USER@$SSH_HOST:$REMOTE_FRONTEND_DIR/"
+
