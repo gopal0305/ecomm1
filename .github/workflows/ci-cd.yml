@@ -52,7 +52,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
-          path: frontend/dist
+          path: |
+            frontend/dist
+            frontend/dist/**
 
   deploy:
     needs: [build-backend, build-frontend]
