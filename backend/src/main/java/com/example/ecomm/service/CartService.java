@@ -127,6 +127,7 @@ public class CartService {
 
                         i.getQuantity(),
                         (i.getProduct().getPrice() != null ? i.getProduct().getPrice().doubleValue() : 0.0) * i.getQuantity()
+
                 ))
                 .toList();
 
