@@ -1,6 +1,7 @@
 package com.example.ecomm.service;
 
 import com.example.ecomm.common.exceptions.NotFoundException;
+import com.example.ecomm.common.exceptions.UnauthorizedException;
 import com.example.ecomm.dto.wishlist.WishlistDtos;
 import com.example.ecomm.model.Product;
 import com.example.ecomm.model.User;
@@ -11,7 +12,6 @@ import com.example.ecomm.repo.WishlistRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -88,14 +88,19 @@ public class WishlistService {
                 .toList();
 
         return new WishlistDtos.WishlistResponse(items, wishlistId);
+    }
+
+    private User requireCurrentUser() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            throw new com.example.ecomm.common.exceptions.UnauthorizedException("Not authenticated");
+            throw new UnauthorizedException("Not authenticated");
         }
 
+        // JwtAuthenticationFilter sets the authenticated principal name to the user email (see JwtAuthPrincipal/Auth flow)
         String email = auth.getName();
         return users.findByEmail(email)
                 .orElseThrow(() -> new NotFoundException("User not found"));
     }
 }
+
 
