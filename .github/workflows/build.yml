@@ -36,12 +36,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node (latest 20.x)
+      - name: Set up Node (latest)
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '22'
         env:
           FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 
       - name: Install & build frontend
         working-directory: frontend
