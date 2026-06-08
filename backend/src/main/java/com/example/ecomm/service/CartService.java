@@ -123,7 +123,8 @@ public class CartService {
                         i.getProduct().getId(),
                         i.getProduct().getName(),
                         i.getProduct().getImageUrl(),
-                        i.getProduct().getPrice().doubleValue(),
+                        i.getProduct().getPrice() != null ? i.getProduct().getPrice().doubleValue() : 0.0,
+
                         i.getQuantity(),
                         i.getProduct().getPrice() * i.getQuantity()
                 ))

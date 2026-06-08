@@ -6,7 +6,8 @@ import java.util.List;
 
 public class WishlistDtos {
 
-    public record WishlistResponse(List<WishlistItemResponse> items) {}
+    public record WishlistResponse(List<WishlistItemResponse> items, Long wishlistId) {}
+
 
     public record WishlistItemResponse(Long productId, String productName, String imageUrl, double price) {}
 

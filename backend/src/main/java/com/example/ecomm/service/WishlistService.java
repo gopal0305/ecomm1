@@ -92,6 +92,7 @@ public class WishlistService {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new WishlistDtos.WishlistResponse(items, wishlistId);
+
     }
 
     private User requireCurrentUser() {
