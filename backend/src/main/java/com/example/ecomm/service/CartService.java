@@ -15,6 +15,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+
 import java.util.List;
 
 @Service
@@ -131,13 +132,13 @@ public class CartService {
                 ))
                 .toList();
 
-        double total = items.stream()
-                .mapToDouble(i -> i.getProduct().getPrice() * i.getQuantity())
-                .sum();
+        BigDecimal total = items.stream()
+                .map(i -> i.getProduct().getPrice() != null ? i.getProduct().getPrice().multiply(BigDecimal.valueOf(i.getQuantity())) : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        double totalDouble = total.doubleValue();
 
-        return new CartDtos.CartResponse(respItems, total);
-
+        return new CartDtos.CartResponse(respItems, totalDouble);
     }
 
     private User requireCurrentUser() {

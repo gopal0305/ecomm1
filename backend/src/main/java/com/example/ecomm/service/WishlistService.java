@@ -90,12 +90,9 @@ public class WishlistService {
         BigDecimal total = products.stream()
                 .map(Product::getPrice)
                 .filter(p -> p != null)
-                .reduce(BigDecimal.ZERO, (a, b) -> a.add(b));
-
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return new WishlistDtos.WishlistResponse(items, wishlistId);
-
-
     }
 
     private User requireCurrentUser() {
