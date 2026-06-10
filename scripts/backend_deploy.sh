@@ -17,7 +17,7 @@ source "$ROOT_DIR/scripts/common.sh"
 
 : "${JWT_ISSUER:=ecomm}"
 : "${JWT_SECRET:=change-this-secret-to-a-long-random-string}"
-: "${CORS_ALLOWED_ORIGINS:=http://localhost:3000}"
+: "${CORS_ALLOWED_ORIGINS:=http://localhost:4000}"
 
 : "${BACKEND_JAR_NAME:=ecomm-backend.jar}"
 : "${BACKEND_MAIN_JAR:=$DEPLOY_ROOT/$BACKEND_JAR_NAME}"
