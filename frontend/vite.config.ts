@@ -6,6 +6,15 @@ export default defineConfig({
   server: {
     port: 4000,
     strictPort: true,
+    proxy: {
+      // Forward frontend API calls to the Node backend during local dev
+      // Example: axios('/api/auth/login') -> http://localhost:8080/api/auth/login
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+    },
   },
 });
+
 
