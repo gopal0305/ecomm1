@@ -15,11 +15,13 @@ async function main() {
     database: process.env.DB_NAME || 'ecomm',
   });
 
-  const schemaPath = path.resolve('backend/src/main/resources/schema.sql');
-  const samplePath = path.resolve('backend/src/main/resources/sample-data.sql');
+  // Schema lives in this repo under node-backend/src/db/schema.sql
+  const schemaPath = path.resolve('src/db/schema.sql');
+  const samplePath = path.resolve('src/db/sample-data.sql');
 
   const schemaSql = fs.readFileSync(schemaPath, 'utf8');
   const sampleSql = fs.existsSync(samplePath) ? fs.readFileSync(samplePath, 'utf8') : '';
+
 
   console.log('Initializing DB schema...');
 

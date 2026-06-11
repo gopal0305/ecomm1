@@ -55,7 +55,7 @@ Test:
 
 
 ## Notes
-- This script copies `frontend/` and `node-backend/` into `/opt/ecomm`.
+- This script copies `frontend/` and `node-backend/` into `/data/ecomm`.
 - It does **not** configure Apache/nginx.
 - DB init runs `npm run init-db` best-effort via the node backend.
 

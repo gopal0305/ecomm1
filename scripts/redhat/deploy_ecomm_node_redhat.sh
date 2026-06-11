@@ -28,11 +28,12 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 : "${APP_NAME:=ecomm}"
-: "${DEPLOY_ROOT:=/opt/ecomm}"
+: "${DEPLOY_ROOT:=/data/ecomm}"
 : "${NODE_BACKEND_DIR:=$DEPLOY_ROOT/node-backend}"
 : "${FRONTEND_DIR:=$DEPLOY_ROOT/frontend}"
 : "${FRONTEND_BUILD_DIR:=$FRONTEND_DIR/dist}"
-: "${BACKEND_PORT:=8080}"
+: "${BACKEND_PORT:=8090}"
+
 : "${FRONTEND_PORT:=4000}"
 
 # DB settings (Postgres)
@@ -97,7 +98,7 @@ install_prereqs() {
 ensure_dir() { mkdir -p "$1"; }
 
 sync_code() {
-  # Copy source trees into /opt (simple + robust; keeps deployment self-contained)
+  # Copy source trees into $DEPLOY_ROOT (simple + robust; keeps deployment self-contained)
   log "Syncing frontend -> $FRONTEND_DIR"
   rm -rf "$FRONTEND_DIR"
   mkdir -p "$FRONTEND_DIR"
