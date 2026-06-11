@@ -25,7 +25,9 @@ set -euo pipefail
 #   - backend: 8080 (or $BACKEND_PORT)
 
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# Repo root can be overridden for remote deploys where the script is not located in the repo checkout.
+# Example: sudo REPO_ROOT=/path/to/checkout bash scripts/redhat/deploy_ecomm_node_redhat.sh
+ROOT_DIR="${REPO_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 
 : "${APP_NAME:=ecomm}"
 : "${DEPLOY_ROOT:=/data/ecomm}"
@@ -99,21 +101,61 @@ ensure_dir() { mkdir -p "$1"; }
 
 sync_code() {
   # Copy source trees into $DEPLOY_ROOT (simple + robust; keeps deployment self-contained)
+  # Preflight checks (fail clearly if ROOT_DIR is wrong / not accessible)
+  log "Using ROOT_DIR=$ROOT_DIR"
+  log "Source check: frontend/package.json=$ROOT_DIR/frontend/package.json"
+  log "Source check: node-backend/package.json=$ROOT_DIR/node-backend/package.json"
+
+  if [[ ! -f "$ROOT_DIR/frontend/package.json" ]]; then
+    err "Frontend source sync failed: missing $ROOT_DIR/frontend/package.json"
+    err "If the script runs on a different host, set REPO_ROOT to the correct repo checkout path."
+    err "Debug: ls -la \"$ROOT_DIR\" (frontend dir check)"
+    err "(expected: $ROOT_DIR/frontend/package.json)"
+    ls -la "$ROOT_DIR" || true
+    ls -la "$ROOT_DIR/frontend" || true
+    exit 1
+  fi
+
+
+  if [[ ! -f "$ROOT_DIR/node-backend/package.json" ]]; then
+    err "Backend source sync failed: missing $ROOT_DIR/node-backend/package.json"
+    err "If the script runs on a different host, set REPO_ROOT to the correct repo checkout path."
+    exit 1
+  fi
+
   log "Syncing frontend -> $FRONTEND_DIR"
   rm -rf "$FRONTEND_DIR"
   mkdir -p "$FRONTEND_DIR"
-  rsync -a --delete "$ROOT_DIR/frontend/" "$FRONTEND_DIR/" || {
-    # rsync may be missing; fallback to cp -a (less robust for deletes)
+  if have_cmd rsync; then
+    rsync -a --delete "$ROOT_DIR/frontend/" "$FRONTEND_DIR/"
+  else
+    # fallback to cp -a (less robust for deletes)
     cp -a "$ROOT_DIR/frontend/." "$FRONTEND_DIR/"
-  }
+  fi
+
+  # Sanity check: frontend/package.json must exist before building
+  if [[ ! -f "$FRONTEND_DIR/package.json" ]]; then
+    err "Frontend source sync failed: missing $FRONTEND_DIR/package.json"
+    exit 1
+  fi
 
   log "Syncing node-backend -> $NODE_BACKEND_DIR"
   rm -rf "$NODE_BACKEND_DIR"
   mkdir -p "$NODE_BACKEND_DIR"
-  rsync -a --delete "$ROOT_DIR/node-backend/" "$NODE_BACKEND_DIR/" || {
+  if have_cmd rsync; then
+    rsync -a --delete "$ROOT_DIR/node-backend/" "$NODE_BACKEND_DIR/"
+  else
     cp -a "$ROOT_DIR/node-backend/." "$NODE_BACKEND_DIR/"
-  }
+  fi
+
+  # Sanity check: node-backend/package.json must exist before installing deps
+  if [[ ! -f "$NODE_BACKEND_DIR/package.json" ]]; then
+    err "Backend source sync failed: missing $NODE_BACKEND_DIR/package.json"
+    exit 1
+  fi
 }
+
+
 
 build_frontend() {
   log "Building frontend static assets..."
@@ -130,6 +172,13 @@ install_backend_deps() {
   log "Installing backend dependencies..."
   (cd "$NODE_BACKEND_DIR" && npm ci --silent || npm install)
 }
+
+fix_frontend_env_copy_scope_bug_if_any() {
+  # No-op placeholder.
+  # Kept for compatibility with older versions of this script.
+  true
+}
+
 
 maybe_init_db() {
   if [[ "$RUN_DB_INIT" != "true" ]]; then
@@ -224,8 +273,8 @@ const FRONTEND_DIST = process.env.FRONTEND_DIST || path.join(__dirname, 'fronten
 
 app.use(express.static(FRONTEND_DIST, { index: false }));
 
-// SPA fallback
-app.get('*', (req, res) => {
+// SPA fallback (avoid app.get('*', ...) which can break with some Express/router versions)
+app.use((req, res) => {
   res.sendFile(path.join(FRONTEND_DIST, 'index.html'));
 });
 
@@ -233,6 +282,7 @@ app.listen(FRONTEND_PORT, () => {
   console.log(`Frontend static server listening on :${FRONTEND_PORT} (dist: ${FRONTEND_DIST})`);
 });
 EOF
+
 
   # Ensure express exists for the static server.
   # We'll install it into deploy root via a lightweight npm init.

@@ -5,11 +5,21 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState<any>(null);
 
   useEffect(() => {
+    // Admin endpoint is guarded server-side. If unauthenticated/unauthorized,
+    // send user to login page.
     axios
       .get('/api/admin')
-      .then((res) => setStats(res.data))
-      .catch(() => setStats(null));
+      .then((res: any) => setStats(res.data))
+      .catch((err: any) => {
+        setStats(null);
+        const status = err?.response?.status;
+        if (status === 401 || status === 403) {
+          window.location.href = '/login';
+        }
+      });
+
   }, []);
+
 
   return (
     <div>
